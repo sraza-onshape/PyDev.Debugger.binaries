@@ -1,45 +1,46 @@
 name: mac
 
 on:
-  - push
-  - workflow_dispatch
-      
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    
+
     strategy:
       fail-fast: true
       matrix:
-        name: [
-          "mac-py39",
-        ]
-        
+        name: ["mac-py312"]
         include:
-          - name: "mac-py39"
-            python-version: "3.9"
-            os: macos-10.15
+          - name: "mac-py312"
+            python-version: "3.12"
+            os: macos-13
 
     steps:
     - uses: actions/checkout@v2
-    
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
     - name: git clone PyDev.Debugger
       run: |
         cd ..
         git clone https://github.com/fabioz/PyDev.Debugger.git
-#         cd PyDev.Debugger
-#         git checkout py311_939
-        
+
     - name: Compile attach to process on macOS
       run: |
         cd ../PyDev.Debugger/pydevd_attach_to_process/linux_and_mac
         ./compile_mac.sh
-        
+
     - name: Copy files to upload
       run: |
         cp ../PyDev.Debugger/pydevd_attach_to_process/*.dylib .
         ls -la
-        
+
     - uses: actions/upload-artifact@v2
       with:
         name: mac_binaries
